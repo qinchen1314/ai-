@@ -1,15 +1,17 @@
 # MindFlow
 
-MindFlow is an AI-native personal knowledge management system.
+MindFlow 是一个 AI 原生个人知识管理系统。
 
-The v0.1 goal is to build the first usable knowledge engine:
+> 仓库首页 README 位于项目根目录：[`../README.md`](../README.md)
 
-- Create and store Markdown-based knowledge.
-- Let AI understand knowledge through summaries and embeddings.
-- Retrieve personal knowledge with vector and keyword search.
-- Answer questions with source tracking.
+v0.1 目标是构建第一个可用的 AI 知识引擎：
 
-## Project Structure
+- 创建和存储 Markdown 知识。
+- 通过摘要和 Embedding 让 AI 理解知识。
+- 使用向量搜索和关键词搜索检索个人知识。
+- 通过 RAG Chat 回答问题并返回来源。
+
+## 项目结构
 
 ```text
 mindflow/
@@ -27,33 +29,29 @@ mindflow/
 └── LICENSE
 ```
 
-## Implemented Scope
+## 已实现范围
 
-- Backend monorepo with Spring Boot, DDD-style domain, application ports, infrastructure adapters, and API layer.
-- Knowledge object and knowledge relation domain models.
-- PostgreSQL/Flyway schema including pgvector-ready embeddings and asynchronous AI task table.
-- Knowledge creation API: `POST /api/v1/knowledge`.
-- Markdown parsing application service.
-- LLM and embedding abstractions.
-- AI task workflow with embedding worker.
-- Vector search and hybrid search application contracts.
-- RAG chat API: `POST /api/v1/chat`.
-- React + TypeScript + Vite frontend with `/editor`, `/chat`, and `/knowledge` routes.
-- Docker Compose stack for backend, frontend, PostgreSQL, and Redis.
-- GitHub Actions CI for backend tests and frontend audit/build.
+- Spring Boot 后端多模块工程。
+- 知识对象、知识关系、AI 任务、搜索模型。
+- PostgreSQL/Flyway/pgvector 初始化。
+- 知识创建接口：`POST /api/v1/knowledge`。
+- RAG Chat 接口：`POST /api/v1/chat`。
+- React + TypeScript + Vite 前端。
+- Docker Compose 一键启动。
+- GitHub Actions CI。
 
-Some integrations are intentionally abstract in v0.1 scaffolding: real LLM HTTP calls, real pgvector search adapters, and production-grade async workers are represented by ports and tested services, ready for the next implementation pass.
+真实 LLM HTTP 调用、真实 pgvector 检索适配器、生产级异步任务 Worker 仍是后续实现项。
 
-## Local Development
+## 本地开发
 
-### Backend
+### 后端
 
 ```bash
 cd mindflow/backend
 mvn --settings .mvn/settings.xml test
 ```
 
-### Frontend
+### 前端
 
 ```bash
 cd mindflow/frontend
@@ -61,22 +59,22 @@ npm ci
 npm run build
 ```
 
-## Development Principle
+## 开发原则
 
-MindFlow is built one issue at a time. Each change should stay scoped, preserve the existing architecture, include relevant verification, and avoid unrelated dependencies.
+MindFlow 按 issue 逐步构建。每次变更都应该保持范围清晰、遵守现有架构、包含必要验证，并避免无关依赖。
 
 ## Docker
 
-Run the full local stack from the `mindflow/` directory:
+从 `mindflow/` 目录启动完整本地栈：
 
 ```bash
 docker compose up --build
 ```
 
-This starts the Spring Boot backend, Vite-built frontend served by Nginx, PostgreSQL with pgvector, and Redis.
+这会启动 Spring Boot 后端、Nginx 托管的前端、PostgreSQL/pgvector 和 Redis。
 
-More details:
+更多文档：
 
-- Architecture: [`docs/architecture.md`](docs/architecture.md)
-- Deployment: [`docs/deployment.md`](docs/deployment.md)
-- Contribution workflow: [`CONTRIBUTING.md`](CONTRIBUTING.md)
+- 架构说明：[`docs/architecture.md`](docs/architecture.md)
+- 部署说明：[`docs/deployment.md`](docs/deployment.md)
+- 贡献规范：[`CONTRIBUTING.md`](CONTRIBUTING.md)
