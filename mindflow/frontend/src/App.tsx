@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { FormEvent, useMemo, useState } from 'react';
 
 type Route = '/editor' | '/chat' | '/knowledge';
 
@@ -60,6 +60,8 @@ export function App() {
 
       {currentRoute.path === '/editor' ? (
         <MarkdownEditorPage />
+      ) : currentRoute.path === '/chat' ? (
+        <ChatPage />
       ) : (
         <section className="page-card">
           <p className="eyebrow">{currentRoute.path}</p>
@@ -126,6 +128,117 @@ function MarkdownEditorPage() {
       <p className="save-state">
         {savedAt ? `上次保存：${new Date(savedAt).toLocaleString()}` : '还没有保存过。'}
       </p>
+    </section>
+  );
+}
+
+type ChatMessage = {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  sources?: string[];
+};
+
+function ChatPage() {
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    {
+      id: 'welcome',
+      role: 'assistant',
+      content: '你好，我是 MindFlow。问我一个和知识库有关的问题，我会尝试带来源回答。',
+    },
+  ]);
+  const [question, setQuestion] = useState('');
+  const [isSending, setIsSending] = useState(false);
+
+  async function submitQuestion(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const trimmedQuestion = question.trim();
+    if (!trimmedQuestion || isSending) {
+      return;
+    }
+
+    const userMessage: ChatMessage = {
+      id: crypto.randomUUID(),
+      role: 'user',
+      content: trimmedQuestion,
+    };
+    setMessages((current) => [...current, userMessage]);
+    setQuestion('');
+    setIsSending(true);
+
+    try {
+      const response = await fetch('/api/v1/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ question: trimmedQuestion }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Chat request failed with HTTP ${response.status}`);
+      }
+
+      const result = (await response.json()) as { answer?: string; sources?: string[] };
+      setMessages((current) => [
+        ...current,
+        {
+          id: crypto.randomUUID(),
+          role: 'assistant',
+          content: result.answer?.trim() || '我没有拿到有效回答。',
+          sources: result.sources ?? [],
+        },
+      ]);
+    } catch (error) {
+      setMessages((current) => [
+        ...current,
+        {
+          id: crypto.randomUUID(),
+          role: 'assistant',
+          content: error instanceof Error ? error.message : 'Chat request failed',
+        },
+      ]);
+    } finally {
+      setIsSending(false);
+    }
+  }
+
+  return (
+    <section className="chat-page">
+      <div className="chat-header">
+        <p className="eyebrow">/chat</p>
+        <h2>AI Chat</h2>
+        <p>像 ChatGPT 一样提问，但答案会优先使用 MindFlow 知识库上下文。</p>
+      </div>
+
+      <div className="chat-window" aria-live="polite">
+        {messages.map((message) => (
+          <article className={`chat-message ${message.role}`} key={message.id}>
+            <span>{message.role === 'user' ? '你' : 'MindFlow'}</span>
+            <p>{message.content}</p>
+            {message.sources && message.sources.length > 0 ? (
+              <ul className="source-list">
+                {message.sources.map((source) => (
+                  <li key={source}>{source}</li>
+                ))}
+              </ul>
+            ) : null}
+          </article>
+        ))}
+      </div>
+
+      <form className="chat-composer" onSubmit={submitQuestion}>
+        <textarea
+          aria-label="向 MindFlow 提问"
+          placeholder="输入问题，例如：Spring AI 怎么做 RAG？"
+          rows={3}
+          value={question}
+          onChange={(event) => setQuestion(event.target.value)}
+        />
+        <button className="primary-button" type="submit" disabled={!question.trim() || isSending}>
+          {isSending ? '思考中…' : '发送'}
+        </button>
+      </form>
     </section>
   );
 }
