@@ -25,3 +25,13 @@ mindflow/
 ## Development Principle
 
 MindFlow is built one issue at a time. Each change should stay scoped, preserve the existing architecture, include relevant verification, and avoid unrelated dependencies.
+
+## Docker
+
+Run the full local stack from the `mindflow/` directory:
+
+```bash
+docker compose up --build
+```
+
+This starts the Spring Boot backend, Vite-built frontend served by Nginx, PostgreSQL with pgvector, and Redis.

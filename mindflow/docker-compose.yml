@@ -1,0 +1,63 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mindflow-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/mindflow
+      SPRING_DATASOURCE_USERNAME: mindflow
+      SPRING_DATASOURCE_PASSWORD: mindflow
+      SPRING_FLYWAY_ENABLED: "true"
+      MINDFLOW_PERSISTENCE_ENABLED: "true"
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: mindflow-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: mindflow-postgres
+    environment:
+      POSTGRES_DB: mindflow
+      POSTGRES_USER: mindflow
+      POSTGRES_PASSWORD: mindflow
+    ports:
+      - "5432:5432"
+    volumes:
+      - mindflow_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mindflow -d mindflow"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: mindflow-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - mindflow_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mindflow_postgres_data:
+  mindflow_redis_data:
