@@ -1,0 +1,36 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+
+# Java / Maven
+target/
+*.class
+.m2repo/
+
+# Node / Frontend
+node_modules/
+dist/
+build/
+.vite/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Docker / local runtime
+docker/data/
+*.pid
+
+# Codex / local scratch
+.codex/
