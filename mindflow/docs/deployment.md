@@ -13,7 +13,7 @@ docker compose up --build
 | `frontend` | `5173` | Nginx serving the built React app |
 | `backend` | `8080` | Spring Boot API |
 | `postgres` | `5432` | PostgreSQL with pgvector |
-| `redis` | `6379` | Redis for future async/caching work |
+| external Redis | `81.70.47.98:6379` | Redis for future async/caching work |
 
 ## Compose Files
 
@@ -52,6 +52,8 @@ Runtime environment variables used by compose:
 - `SPRING_DATASOURCE_PASSWORD`
 - `SPRING_FLYWAY_ENABLED`
 - `MINDFLOW_PERSISTENCE_ENABLED`
+- `SPRING_DATA_REDIS_HOST=81.70.47.98`
+- `SPRING_DATA_REDIS_PORT=6379`
 
 ## Frontend Image
 

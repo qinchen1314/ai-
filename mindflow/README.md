@@ -71,7 +71,7 @@ MindFlow 按 issue 逐步构建。每次变更都应该保持范围清晰、遵�
 docker compose up --build
 ```
 
-这会启动 Spring Boot 后端、Nginx 托管的前端、PostgreSQL/pgvector 和 Redis。
+这会启动 Spring Boot 后端、Nginx 托管的前端、PostgreSQL/pgvector，并连接外部 Redis：`81.70.47.98:6379`。
 
 更多文档：
 

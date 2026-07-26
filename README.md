@@ -9,7 +9,7 @@ MindFlow 是一个 AI 原生个人知识管理系统，目标是把 Markdown 笔
 - Spring Boot 后端多模块工程。
 - DDD 风格领域层：知识对象、知识关系、AI 任务、搜索结果模型。
 - PostgreSQL + Flyway 初始化脚本，已启用 pgvector。
-- Redis 服务预留，用于后续异步任务和缓存。
+- Redis 使用外部实例：`81.70.47.98:6379`，用于后续异步任务和缓存。
 - 知识创建接口：`POST /api/v1/knowledge`。
 - RAG Chat 接口：`POST /api/v1/chat`。
 - LLM、Embedding、Vector Search、Hybrid Search 抽象层。
@@ -63,7 +63,7 @@ docker compose up --build
 - 前端页面：`http://localhost:5173`
 - 后端接口：`http://localhost:8080`
 - PostgreSQL：`localhost:5432`
-- Redis：`localhost:6379`
+- Redis：`81.70.47.98:6379`
 
 停止：
 
@@ -72,7 +72,7 @@ cd mindflow
 docker compose down
 ```
 
-如果需要删除数据库和 Redis 数据卷：
+如果需要删除本地数据库数据卷：
 
 ```bash
 cd mindflow
@@ -88,7 +88,7 @@ docker compose down -v
 - Node.js 22+
 - npm
 - PostgreSQL，建议带 pgvector
-- Redis
+- Redis：`81.70.47.98:6379`
 
 后端测试：
 

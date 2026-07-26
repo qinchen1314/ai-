@@ -82,7 +82,7 @@ PostgreSQL stores users, workspaces, knowledge objects, knowledge relations, kno
 
 pgvector is enabled and `knowledge_object.embedding` is ready for semantic search.
 
-Redis is included in the deployment stack for future async processing and caching.
+Redis uses the external instance `81.70.47.98:6379` for future async processing and caching.
 
 ## Key Flow
 
