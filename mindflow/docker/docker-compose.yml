@@ -1,0 +1,34 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: mindflow-postgres
+    environment:
+      POSTGRES_DB: mindflow
+      POSTGRES_USER: mindflow
+      POSTGRES_PASSWORD: mindflow
+    ports:
+      - "5432:5432"
+    volumes:
+      - mindflow_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mindflow -d mindflow"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: mindflow-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - mindflow_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mindflow_postgres_data:
+  mindflow_redis_data:
