@@ -6,9 +6,15 @@ const defaultMarkdown = `# MindFlow 知识笔记
 
 用 Markdown 写下你的想法，右侧会即时预览。
 
-- 支持标题
-- 支持列表
-- 支持代码块
+这一段故意保留两行：
+第一行是观点。
+第二行是补充说明。
+
+## 支持内容
+
+- 标题
+- 列表
+- 代码块
 
 \`\`\`
 Question -> Search -> Context -> LLM -> Answer
@@ -29,7 +35,7 @@ const routes: Array<{ path: Route; label: string; description: string }> = [
   {
     path: '/knowledge',
     label: '知识库',
-    description: '浏览已沉淀的知识对象和来源。',
+    description: '浏览已经沉淀的知识对象、分块和来源。',
   },
 ];
 
@@ -99,7 +105,7 @@ function MarkdownEditorPage() {
         <div>
           <p className="eyebrow">/editor</p>
           <h2>Markdown 编辑器</h2>
-          <p>编辑、保存、预览知识内容。当前版本先保存到浏览器本地。</p>
+          <p>编辑、保存、预览知识内容。当前版本先保存到浏览器本地，下一阶段接入后端知识分块。</p>
         </div>
         <button className="primary-button" type="button" onClick={saveDraft}>
           保存草稿
@@ -125,9 +131,7 @@ function MarkdownEditorPage() {
         </div>
       </div>
 
-      <p className="save-state">
-        {savedAt ? `上次保存：${new Date(savedAt).toLocaleString()}` : '还没有保存过。'}
-      </p>
+      <p className="save-state">{savedAt ? `上次保存：${new Date(savedAt).toLocaleString()}` : '还没有保存过。'}</p>
     </section>
   );
 }
@@ -144,7 +148,7 @@ function ChatPage() {
     {
       id: 'welcome',
       role: 'assistant',
-      content: '你好，我是 MindFlow。问我一个和知识库有关的问题，我会尝试带来源回答。',
+      content: '你好，我是 MindFlow。下一阶段会接入真实知识检索，现在这个页面主要用于验证 /chat 接口形状。',
     },
   ]);
   const [question, setQuestion] = useState('');
@@ -185,7 +189,7 @@ function ChatPage() {
         {
           id: crypto.randomUUID(),
           role: 'assistant',
-          content: result.answer?.trim() || '我没有拿到有效回答。',
+          content: result.answer?.trim() || '没有拿到有效回答。',
           sources: result.sources ?? [],
         },
       ]);
@@ -208,7 +212,7 @@ function ChatPage() {
       <div className="chat-header">
         <p className="eyebrow">/chat</p>
         <h2>AI Chat</h2>
-        <p>像 ChatGPT 一样提问，但答案会优先使用 MindFlow 知识库上下文。</p>
+        <p>像 ChatGPT 一样提问，但二阶段目标是让答案优先使用 MindFlow 知识库上下文。</p>
       </div>
 
       <div className="chat-window" aria-live="polite">
@@ -236,7 +240,7 @@ function ChatPage() {
           onChange={(event) => setQuestion(event.target.value)}
         />
         <button className="primary-button" type="submit" disabled={!question.trim() || isSending}>
-          {isSending ? '思考中…' : '发送'}
+          {isSending ? '思考中...' : '发送'}
         </button>
       </form>
     </section>
@@ -245,7 +249,7 @@ function ChatPage() {
 
 type MarkdownBlock =
   | { type: 'heading'; level: 1 | 2 | 3; text: string; key: string }
-  | { type: 'paragraph'; text: string; key: string }
+  | { type: 'paragraph'; lines: string[]; key: string }
   | { type: 'list'; items: string[]; key: string }
   | { type: 'code'; text: string; key: string };
 
@@ -258,7 +262,7 @@ function parseMarkdown(markdown: string): MarkdownBlock[] {
 
   function flushParagraph(index: number) {
     if (paragraph.length > 0) {
-      blocks.push({ type: 'paragraph', text: paragraph.join(' '), key: `p-${index}` });
+      blocks.push({ type: 'paragraph', lines: paragraph, key: `p-${index}` });
       paragraph = [];
     }
   }
@@ -315,7 +319,7 @@ function parseMarkdown(markdown: string): MarkdownBlock[] {
     }
 
     flushList(index);
-    paragraph.push(trimmed);
+    paragraph.push(line);
   }
 
   flushParagraph(lines.length);
@@ -351,5 +355,13 @@ function renderBlock(block: MarkdownBlock) {
     );
   }
 
-  return <p key={block.key}>{block.text}</p>;
+  return (
+    <p key={block.key}>
+      {block.lines.map((line, index) => (
+        <span className="markdown-line" key={`${block.key}-${index}`}>
+          {line}
+        </span>
+      ))}
+    </p>
+  );
 }

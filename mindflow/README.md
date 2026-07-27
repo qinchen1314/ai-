@@ -1,17 +1,10 @@
 # MindFlow
 
-MindFlow 是一个 AI 原生个人知识管理系统。
+MindFlow is a local-first AI knowledge management project. The current development focus is local backend and frontend testing with a local PostgreSQL database.
 
-> 仓库首页 README 位于项目根目录：[`../README.md`](../README.md)
+Current status: Phase 1 local skeleton is runnable. The next work is Phase 2: Markdown chunking, local keyword retrieval, then embedding and pgvector search. See [docs/phase-2-roadmap.md](docs/phase-2-roadmap.md).
 
-v0.1 目标是构建第一个可用的 AI 知识引擎：
-
-- 创建和存储 Markdown 知识。
-- 通过摘要和 Embedding 让 AI 理解知识。
-- 使用向量搜索和关键词搜索检索个人知识。
-- 通过 RAG Chat 回答问题并返回来源。
-
-## 项目结构
+## Project Structure
 
 ```text
 mindflow/
@@ -23,58 +16,100 @@ mindflow/
 │   └── mindflow-api/
 ├── frontend/
 ├── docs/
-├── docker-compose.yml
 ├── README.md
 ├── CONTRIBUTING.md
 └── LICENSE
 ```
 
-## 已实现范围
+## Local Database
 
-- Spring Boot 后端多模块工程。
-- 知识对象、知识关系、AI 任务、搜索模型。
-- PostgreSQL/Flyway/pgvector 初始化。
-- 知识创建接口：`POST /api/v1/knowledge`。
-- RAG Chat 接口：`POST /api/v1/chat`。
-- React + TypeScript + Vite 前端。
-- Docker Compose 一键启动。
-- GitHub Actions CI。
+The backend is configured to use the local PostgreSQL database by default:
 
-真实 LLM HTTP 调用、真实 pgvector 检索适配器、生产级异步任务 Worker 仍是后续实现项。
+```text
+jdbc url: jdbc:postgresql://localhost:5432/mindflow
+database: mindflow
+username: mindflow
+password: mindflow
+```
 
-## 本地开发
+pgvector is required and should be installed in the `mindflow` database:
 
-### 后端
+```sql
+CREATE EXTENSION IF NOT EXISTS vector;
+```
+
+Database migrations live in:
+
+```text
+backend/mindflow-infrastructure/src/main/resources/db/migration
+```
+
+The local connection defaults are in:
+
+```text
+backend/mindflow-api/src/main/resources/application.yml
+```
+
+## Backend Local Run
+
+Run tests:
 
 ```bash
 cd mindflow/backend
 mvn --settings .mvn/settings.xml test
 ```
 
-### 前端
+Start the API:
+
+```bash
+cd mindflow/backend
+mvn --settings .mvn/settings.xml -pl mindflow-api -am spring-boot:run
+```
+
+The API listens on:
+
+```text
+http://localhost:8080
+```
+
+## Frontend Local Run
+
+Install dependencies:
 
 ```bash
 cd mindflow/frontend
 npm ci
-npm run build
 ```
 
-## 开发原则
-
-MindFlow 按 issue 逐步构建。每次变更都应该保持范围清晰、遵守现有架构、包含必要验证，并避免无关依赖。
-
-## Docker
-
-从 `mindflow/` 目录启动完整本地栈：
+Start the dev server:
 
 ```bash
-docker compose up --build
+cd mindflow/frontend
+npm run dev
 ```
 
-这会启动 Spring Boot 后端、Nginx 托管的前端、PostgreSQL/pgvector，并连接外部 Redis：`81.70.47.98:6379`。
+The frontend listens on:
 
-更多文档：
+```text
+http://localhost:5173
+```
 
-- 架构说明：[`docs/architecture.md`](docs/architecture.md)
-- 部署说明：[`docs/deployment.md`](docs/deployment.md)
-- 贡献规范：[`CONTRIBUTING.md`](CONTRIBUTING.md)
+Vite proxies `/api` requests to `http://localhost:8080`.
+
+## Implemented Scope
+
+- Spring Boot multi-module backend.
+- PostgreSQL, Flyway, JPA, and pgvector local database setup.
+- Knowledge creation API: `POST /api/v1/knowledge`.
+- RAG chat API: `POST /api/v1/chat`.
+- React + TypeScript + Vite frontend.
+- Frontend Chinese text has been repaired, and Markdown preview now preserves paragraph line breaks.
+
+## Not Implemented Yet
+
+- Markdown is not yet persisted as searchable chunks.
+- Keyword retrieval over `knowledge_chunk` is not implemented yet.
+- Embedding generation and pgvector similarity search are not wired into the retrieval path yet.
+- `/chat` does not yet generate answers from real retrieved knowledge context.
+
+See [docs/deployment.md](docs/deployment.md) for the local development checklist.

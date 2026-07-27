@@ -1,6 +1,22 @@
 spring:
   application:
     name: mindflow-api
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/mindflow}
+    username: ${SPRING_DATASOURCE_USERNAME:mindflow}
+    password: ${SPRING_DATASOURCE_PASSWORD:mindflow}
+    driver-class-name: org.postgresql.Driver
+  flyway:
+    enabled: ${SPRING_FLYWAY_ENABLED:true}
+    baseline-on-migrate: ${SPRING_FLYWAY_BASELINE_ON_MIGRATE:true}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
 
 server:
   port: 8080
+
+mindflow:
+  persistence:
+    enabled: ${MINDFLOW_PERSISTENCE_ENABLED:true}

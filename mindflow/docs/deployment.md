@@ -1,95 +1,97 @@
-# MindFlow Deployment
+# MindFlow Local Development
 
-MindFlow can be started locally with Docker Compose from the `mindflow/` directory.
+This project is currently configured for local development only.
 
-```bash
-docker compose up --build
-```
+## Required Local Services
 
-## Services
+Use the PostgreSQL service installed on this machine:
 
-| Service | Port | Purpose |
-| --- | ---: | --- |
-| `frontend` | `5173` | Nginx serving the built React app |
-| `backend` | `8080` | Spring Boot API |
-| `postgres` | `5432` | PostgreSQL with pgvector |
-| external Redis | `81.70.47.98:6379` | Redis for future async/caching work |
+| Service | Address | Notes |
+| --- | --- | --- |
+| PostgreSQL 17 | `localhost:5432` | Database `mindflow` |
+| pgvector | PostgreSQL extension | Installed in the `mindflow` database |
+| Backend API | `localhost:8080` | Spring Boot local process |
+| Frontend dev server | `localhost:5173` | Vite local process |
 
-## Compose Files
-
-The main stack is defined in:
+Database credentials for local testing:
 
 ```text
-mindflow/docker-compose.yml
+database: mindflow
+username: mindflow
+password: mindflow
+jdbc url: jdbc:postgresql://localhost:5432/mindflow
 ```
 
-The older database-only compose file remains in:
+The backend reads these defaults from:
 
 ```text
-mindflow/docker/docker-compose.yml
+mindflow/backend/mindflow-api/src/main/resources/application.yml
 ```
 
-Use the root compose file for full-stack local deployment.
-
-## Backend Image
-
-The backend image is built from:
+Environment variables can still override them when needed:
 
 ```text
-mindflow/backend/Dockerfile
+SPRING_DATASOURCE_URL
+SPRING_DATASOURCE_USERNAME
+SPRING_DATASOURCE_PASSWORD
+SPRING_FLYWAY_ENABLED
+MINDFLOW_PERSISTENCE_ENABLED
 ```
 
-It packages the Spring Boot API module:
+## Backend
 
-```bash
-mvn -pl mindflow-api -am package -DskipTests
-```
-
-Runtime environment variables used by compose:
-
-- `SPRING_DATASOURCE_URL`
-- `SPRING_DATASOURCE_USERNAME`
-- `SPRING_DATASOURCE_PASSWORD`
-- `SPRING_FLYWAY_ENABLED`
-- `MINDFLOW_PERSISTENCE_ENABLED`
-- `SPRING_DATA_REDIS_HOST=81.70.47.98`
-- `SPRING_DATA_REDIS_PORT=6379`
-
-## Frontend Image
-
-The frontend image is built from:
-
-```text
-mindflow/frontend/Dockerfile
-```
-
-It runs:
-
-```bash
-npm ci
-npm run build
-```
-
-The resulting static files are served by Nginx. Requests under `/api/` are proxied to the backend service.
-
-## Local Verification
-
-Without Docker:
+Run tests:
 
 ```bash
 cd mindflow/backend
 mvn --settings .mvn/settings.xml test
-
-cd ../frontend
-npm ci
-npm audit --audit-level=moderate
-npm run build
 ```
 
-With Docker installed:
+Start the API locally:
 
 ```bash
-cd mindflow
-docker compose config
-docker compose up --build
+cd mindflow/backend
+mvn --settings .mvn/settings.xml -pl mindflow-api -am spring-boot:run
+```
+
+Flyway is enabled by default. It uses the SQL migrations under:
+
+```text
+mindflow/backend/mindflow-infrastructure/src/main/resources/db/migration
+```
+
+## Frontend
+
+Install dependencies:
+
+```bash
+cd mindflow/frontend
+npm ci
+```
+
+Start the Vite dev server:
+
+```bash
+cd mindflow/frontend
+npm run dev
+```
+
+The Vite dev server proxies `/api` to:
+
+```text
+http://localhost:8080
+```
+
+## Local Verification
+
+Confirm pgvector:
+
+```bash
+psql -h localhost -U mindflow -d mindflow -c "select extname, extversion from pg_extension where extname='vector';"
+```
+
+Confirm tables:
+
+```bash
+psql -h localhost -U mindflow -d mindflow -c "select table_name from information_schema.tables where table_schema='public' order by table_name;"
 ```
